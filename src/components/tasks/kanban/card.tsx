@@ -1,28 +1,30 @@
 import { memo, useMemo } from 'react';
-import CustomAvatar from '@/components/custom-avatar';
-import { Text } from '@/components/text';
-import { TextIcon } from '@/components/text-icon';
-import { User } from '@/graphql/schema.types';
-import { getDateColor } from '@/utilities';
+
+import { useDelete, useNavigation } from '@refinedev/core';
+
 import {
   ClockCircleOutlined,
   DeleteOutlined,
   EyeOutlined,
   MoreOutlined,
 } from '@ant-design/icons';
+import type { MenuProps } from 'antd';
 import {
   Button,
   Card,
   ConfigProvider,
   Dropdown,
-  MenuProps,
+  Skeleton,
   Space,
   Tag,
   theme,
   Tooltip,
 } from 'antd';
 import dayjs from 'dayjs';
-import { useDelete, useNavigation } from '@refinedev/core';
+
+import { CustomAvatar, Text, TextIcon } from '@/components';
+import type { User } from '@/graphql/schema.types';
+import { getDateColor } from '@/utilities';
 
 type ProjectCardProps = {
   id: string;
@@ -32,11 +34,16 @@ type ProjectCardProps = {
   users?: {
     id: string;
     name: string;
-    avatarUrl: User['avatarUrl'];
+    avatarUrl?: User['avatarUrl'];
   }[];
 };
 
-const ProjectCard = ({ id, title, dueDate, users }: ProjectCardProps) => {
+export const ProjectCard = ({
+  id,
+  title,
+  dueDate,
+  users,
+}: ProjectCardProps) => {
   const { token } = theme.useToken();
   const { edit } = useNavigation();
   const { mutate } = useDelete();
@@ -54,8 +61,8 @@ const ProjectCard = ({ id, title, dueDate, users }: ProjectCardProps) => {
       {
         danger: true,
         label: 'Delete card',
-        icon: <DeleteOutlined />,
         key: '2',
+        icon: <DeleteOutlined />,
         onClick: () => {
           mutate({
             resource: 'tasks',
@@ -78,7 +85,7 @@ const ProjectCard = ({ id, title, dueDate, users }: ProjectCardProps) => {
 
     return {
       color: getDateColor({ date: dueDate }) as string,
-      text: date.format('MMM DD'),
+      text: date.format('MMM D'),
     };
   }, [dueDate]);
 
@@ -98,7 +105,9 @@ const ProjectCard = ({ id, title, dueDate, users }: ProjectCardProps) => {
       <Card
         size="small"
         title={<Text ellipsis={{ tooltip: title }}>{title}</Text>}
-        onClick={() => edit('tasks', id, 'replace')}
+        onClick={() => {
+          edit('tasks', id, 'replace');
+        }}
         extra={
           <Dropdown
             trigger={['click']}
@@ -117,8 +126,13 @@ const ProjectCard = ({ id, title, dueDate, users }: ProjectCardProps) => {
             <Button
               type="text"
               shape="circle"
-              icon={<MoreOutlined />}
-              style={{ transform: 'rotate(90deg)' }}
+              icon={
+                <MoreOutlined
+                  style={{
+                    transform: 'rotate(90deg)',
+                  }}
+                />
+              }
               onPointerDown={(e) => {
                 e.stopPropagation();
               }}
@@ -137,10 +151,20 @@ const ProjectCard = ({ id, title, dueDate, users }: ProjectCardProps) => {
             gap: '8px',
           }}
         >
-          <TextIcon style={{ marginRight: '8px' }} />
+          <TextIcon
+            style={{
+              marginRight: '4px',
+            }}
+          />
           {dueDateOptions && (
             <Tag
-              icon={<ClockCircleOutlined style={{ fontSize: '12px' }} />}
+              icon={
+                <ClockCircleOutlined
+                  style={{
+                    fontSize: '12px',
+                  }}
+                />
+              }
               style={{
                 padding: '0 4px',
                 marginInlineEnd: '0',
@@ -166,11 +190,13 @@ const ProjectCard = ({ id, title, dueDate, users }: ProjectCardProps) => {
                 marginRight: '0',
               }}
             >
-              {users.map((user) => (
-                <Tooltip key={user.id} title={user.name}>
-                  <CustomAvatar name={user.name} src={user.avatarUrl} />
-                </Tooltip>
-              ))}
+              {users.map((user) => {
+                return (
+                  <Tooltip key={user.id} title={user.name}>
+                    <CustomAvatar name={user.name} src={user.avatarUrl} />
+                  </Tooltip>
+                );
+              })}
             </Space>
           )}
         </div>
@@ -179,7 +205,39 @@ const ProjectCard = ({ id, title, dueDate, users }: ProjectCardProps) => {
   );
 };
 
-export default ProjectCard;
+export const ProjectCardSkeleton = () => {
+  return (
+    <Card
+      size="small"
+      styles={{
+        body: {
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '8px',
+        },
+      }}
+      title={
+        <Skeleton.Button
+          active
+          size="small"
+          style={{
+            width: '200px',
+            height: '22px',
+          }}
+        />
+      }
+    >
+      <Skeleton.Button
+        active
+        size="small"
+        style={{
+          width: '200px',
+        }}
+      />
+      <Skeleton.Avatar active size="small" />
+    </Card>
+  );
+};
 
 export const ProjectCardMemo = memo(ProjectCard, (prev, next) => {
   return (

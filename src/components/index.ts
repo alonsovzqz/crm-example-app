@@ -22,6 +22,8 @@ export {
 
 export * from './accordion';
 export * from './text';
+export * from './custom-avatar';
+export * from './text-icon';
 export * from './tags/user-tag';
 export * from './tasks/form/description';
 export * from './tasks/form/due-date';
